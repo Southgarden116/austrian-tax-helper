@@ -1,0 +1,225 @@
+.page {
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  font-size: 11px;
+  color: #1a1a1a;
+  background: white;
+  line-height: 1.5;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 3px solid #cc0000;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #cc0000;
+}
+
+.logoSub {
+  font-size: 11px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.yearBadge {
+  font-size: 22px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.generatedAt {
+  font-size: 10px;
+  color: #888;
+  margin-top: 3px;
+  text-align: right;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #cc0000;
+  border-left: 3px solid #cc0000;
+  padding-left: 8px;
+  margin-bottom: 10px;
+  margin-top: 22px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+  background: #f7f7f7;
+  border-bottom: 1px solid #ddd;
+  padding: 5px 8px;
+}
+
+.thR {
+  text-align: right;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+  background: #f7f7f7;
+  border-bottom: 1px solid #ddd;
+  padding: 5px 8px;
+}
+
+.td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+}
+
+.tdR {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tdGroup {
+  padding: 6px 8px;
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #444;
+  border-bottom: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.tdTotal {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+  font-weight: 700;
+  background: #fafafa;
+}
+
+.tdRTotal {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: right;
+  font-weight: 700;
+  background: #fafafa;
+  font-variant-numeric: tabular-nums;
+}
+
+.kzBadge {
+  display: inline-block;
+  background: #ebf5ff;
+  color: #1d4ed8;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.valuePos {
+  color: #15803d;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueNeg {
+  color: #dc2626;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueNeutral {
+  font-weight: 700;
+  color: #1a1a1a;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueZero {
+  color: #aaa;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.summaryCard {
+  padding: 9px 12px;
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
+}
+
+.summaryCardOrange {
+  padding: 9px 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 5px;
+}
+
+.summaryCardLabel {
+  font-size: 10px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.summaryCardValue {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryCardValueRed {
+  color: #dc2626;
+}
+
+.summaryCardValueGreen {
+  color: #15803d;
+}
+
+.summaryCardValueOrange {
+  color: #c2410c;
+}
+
+.transactionsLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.footer {
+  margin-top: 30px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+  text-align: center;
+  color: #bbb;
+  font-size: 9px;
+}

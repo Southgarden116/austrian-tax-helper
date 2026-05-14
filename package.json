@@ -1,0 +1,34 @@
+{
+  "name": "steuerhelfer-at",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://areensaid.com/steuerhelfer",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "etrade:setup": "playwright install chromium",
+    "etrade:download": "node public/etrade-download.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.390.0",
+    "pdfjs-dist": "^5.6.205",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-intl": "^6.8.9",
+    "react-router-dom": "^6.23.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "playwright": "^1.60.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
+  }
+}

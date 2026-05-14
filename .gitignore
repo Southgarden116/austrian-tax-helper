@@ -1,0 +1,11 @@
+/dist
+/node_modules
+
+# eTrade downloader output + saved session (contains personal financial data)
+/etrade-files
+/etrade-session.json
+
+# Local secrets / env
+.env
+.env.local
+.env.*.local

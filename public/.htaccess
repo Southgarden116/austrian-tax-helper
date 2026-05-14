@@ -1,0 +1,9 @@
+# SPA routing: serve index.html for any path that isn't a real file/dir.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /steuerhelfer/
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /steuerhelfer/index.html [L]
+</IfModule>
