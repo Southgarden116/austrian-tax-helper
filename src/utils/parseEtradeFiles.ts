@@ -310,7 +310,7 @@ async function extractPdfPages(file: File): Promise<string[]> {
 // Old-format data row: TradeDate SettlDate MKT/CPT Symbol SELL Qty $Price ...
 // [\s\S]*? skips the MKT/CPT field (e.g. "6 1") which may contain spaces.
 const OLD_CONFIRMATION_ROW =
-  /(\d{2}\/\d{2}\/\d{2})\s+\d{2}\/\d{2}\/\d{2}[\s\S]*?\b([A-Z]{1,6}(?:\.[A-Z]+)?)\s+SELL\s+([\d,]+(?:\.\d+)?)\s+\$([\d]+(?:\.\d+)?)/;
+  /(\d{2}\/\d{2}\/\d{2})\s+\d{2}\/\d{2}\/\d{2}[\s\S]*?\b([A-Z]{1,6}(?:\.[A-Z]+)?)\s+SELL\s+([\d,]+(?:\.\d+)?)\s+\$([\d,]+(?:\.\d+)?)/;
 
 function parseTradeConfirmations(
   pages: string[],
