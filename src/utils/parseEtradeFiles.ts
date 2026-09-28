@@ -47,6 +47,11 @@ function normalizeDate(raw: unknown): string {
   const us = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (us) return `${us[3]}-${us[1].padStart(2, "0")}-${us[2].padStart(2, "0")}`;
 
+  // MM/DD/YY  (older eTrade confirmations — always 2000s)
+  const usShort = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+  if (usShort)
+    return `20${usShort[3]}-${usShort[1].padStart(2, "0")}-${usShort[2].padStart(2, "0")}`;
+
   // MM-DD-YYYY
   const usDash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
   if (usDash)
@@ -290,6 +295,23 @@ async function extractPdfPages(file: File): Promise<string[]> {
 // This is the compliant sell source — unlike the G&L report, which only gives
 // net proceeds. Each confirmation is one transaction on its own page; the
 // "Conditions and Disclosures" pages have no "Transaction Type:" line.
+//
+// Two layout variants exist:
+//
+//   New (2023+)  — vertical key-value layout:
+//     "Transaction Type: Sold"
+//     Data row:  "MM/DD/YYYY  MM/DD/YYYY  <qty>  <price>"  (no $ prefix)
+//     Symbol on separate line: "Symbol / CUSIP / ISIN: DT / ..."
+//
+//   Old (pre-2023) — tabular layout with BUY/SELL column:
+//     Data row:  "MM/DD/YY  MM/DD/YY  <mkt>  <SYM>  SELL  <qty>  $<price>"
+//     No "Transaction Type:" label; transaction type is in the data row.
+
+// Old-format data row: TradeDate SettlDate MKT/CPT Symbol SELL Qty $Price ...
+// [\s\S]*? skips the MKT/CPT field (e.g. "6 1") which may contain spaces.
+const OLD_CONFIRMATION_ROW =
+  /(\d{2}\/\d{2}\/\d{2})\s+\d{2}\/\d{2}\/\d{2}[\s\S]*?\b([A-Z]{1,6}(?:\.[A-Z]+)?)\s+SELL\s+([\d,]+(?:\.\d+)?)\s+\$([\d,]+(?:\.\d+)?)/;
+
 function parseTradeConfirmations(
   pages: string[],
   fileName: string,
@@ -301,44 +323,72 @@ function parseTradeConfirmations(
     const typeMatch = page.match(
       /Transaction Type:\s*(Sold(?:\s+Short)?|Bought)/i,
     );
-    if (!typeMatch) continue; // boilerplate / non-transaction page
 
-    // Only sales feed the moving-average engine; acquisitions come from
-    // BenefitHistory.xlsx (ESPP buys + RSU vests).
-    if (!/^Sold/i.test(typeMatch[1].trim())) continue;
+    if (typeMatch) {
+      // ── New format (2023+) ──────────────────────────────────────────────
+      // Only sales feed the moving-average engine; acquisitions come from
+      // BenefitHistory.xlsx (ESPP buys + RSU vests).
+      if (!/^Sold/i.test(typeMatch[1].trim())) continue;
 
-    // Data row: "<TradeDate> <SettlementDate> <Quantity> <Price>". The two
-    // consecutive dates uniquely identify it on the page.
-    const row = page.match(
-      /(\d{2}\/\d{2}\/\d{4})\s+\d{2}\/\d{2}\/\d{4}\s+([\d,]+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/,
-    );
-    if (!row) {
-      warnings.push(`${fileName}: Handelszeile nicht gefunden (übersprungen).`);
-      continue;
+      // Data row: "<TradeDate> <SettlementDate> <Quantity> <Price>". The two
+      // consecutive dates uniquely identify it on the page.
+      const row = page.match(
+        /(\d{2}\/\d{2}\/\d{4})\s+\d{2}\/\d{2}\/\d{4}\s+([\d,]+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/,
+      );
+      if (!row) {
+        warnings.push(`${fileName}: Handelszeile nicht gefunden (übersprungen).`);
+        continue;
+      }
+
+      const date = normalizeDate(row[1]);
+      const shares = parseQty(row[2]);
+      const priceUSD = parseMoney(row[3]);
+
+      if (!date || !(shares > 0) || !(priceUSD > 0)) {
+        warnings.push(`${fileName}: Werte ungültig (Datum/Menge/Preis).`);
+        continue;
+      }
+
+      const symbol = page
+        .match(/Symbol\s*\/\s*CUSIP[^:]*:\s*([A-Za-z.]+)/)?.[1]
+        ?.trim();
+
+      events.push({
+        date,
+        type: "SELL",
+        shares,
+        pricePerShareUSD: priceUSD,
+        symbol: symbol || undefined,
+        source: "Confirmation",
+        notes: "Verkauf (Trade Confirmation)",
+      });
+    } else {
+      // ── Old format (pre-2023) ───────────────────────────────────────────
+      // "Transaction Type:" label is absent; SELL appears in the table row.
+      // Boilerplate pages (Terms & Conditions) have no matching data row.
+      const oldRow = page.match(OLD_CONFIRMATION_ROW);
+      if (!oldRow) continue;
+
+      const date = normalizeDate(oldRow[1]); // MM/DD/YY → handled by normalizeDate
+      const symbol = oldRow[2];
+      const shares = parseQty(oldRow[3]);
+      const priceUSD = parseMoney(oldRow[4]); // captured without $
+
+      if (!date || !(shares > 0) || !(priceUSD > 0)) {
+        warnings.push(`${fileName}: Werte ungültig (Datum/Menge/Preis) [altes Format].`);
+        continue;
+      }
+
+      events.push({
+        date,
+        type: "SELL",
+        shares,
+        pricePerShareUSD: priceUSD,
+        symbol: symbol || undefined,
+        source: "Confirmation",
+        notes: "Verkauf (Trade Confirmation)",
+      });
     }
-
-    const date = normalizeDate(row[1]);
-    const shares = parseQty(row[2]);
-    const priceUSD = parseMoney(row[3]);
-
-    if (!date || !(shares > 0) || !(priceUSD > 0)) {
-      warnings.push(`${fileName}: Werte ungültig (Datum/Menge/Preis).`);
-      continue;
-    }
-
-    const symbol = page
-      .match(/Symbol\s*\/\s*CUSIP[^:]*:\s*([A-Za-z.]+)/)?.[1]
-      ?.trim();
-
-    events.push({
-      date,
-      type: "SELL",
-      shares,
-      pricePerShareUSD: priceUSD,
-      symbol: symbol || undefined,
-      source: "Confirmation",
-      notes: "Verkauf (Trade Confirmation)",
-    });
   }
 
   if (events.length === 0)
