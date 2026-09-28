@@ -100,10 +100,28 @@ async function main() {
     console.log("Discarded saved session (--fresh) — you'll log in again.");
   }
 
-  const browser = await chromium.launch({ headless: false });
-  const context = await browser.newContext(
-    existsSync(SESSION_FILE) ? { storageState: SESSION_FILE } : {},
-  );
+  // eTrade's bot protection flags a stock Playwright browser (navigator.webdriver,
+  // the --enable-automation switch) and the SPA then hangs on a spinner right
+  // after login. Hide those markers, and prefer the user's real Chrome when it's
+  // installed — it looks far less like automation than the bundled Chromium.
+  const launchOptions = {
+    headless: false,
+    args: ["--disable-blink-features=AutomationControlled"],
+    ignoreDefaultArgs: ["--enable-automation"],
+  };
+  let browser;
+  try {
+    browser = await chromium.launch({ ...launchOptions, channel: "chrome" });
+  } catch {
+    browser = await chromium.launch(launchOptions);
+  }
+  const context = await browser.newContext({
+    ...(existsSync(SESSION_FILE) ? { storageState: SESSION_FILE } : {}),
+    viewport: null, // use the real window size, like a normal browser
+  });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => undefined });
+  });
   const page = await context.newPage();
 
   // Auto-save every download into OUTPUT_DIR. We rename trade-confirmation
